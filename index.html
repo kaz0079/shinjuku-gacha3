@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新宿中華ガチャ - 専用プロトタイプ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (アイコニックな表示用) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ガチャの揺れアニメーション */
+        @keyframes shake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-5px, -2px) rotate(-3deg); }
+            20% { transform: translate(5px, 2px) rotate(3deg); }
+            30% { transform: translate(-5px, 2px) rotate(-3deg); }
+            40% { transform: translate(5px, -2px) rotate(3deg); }
+            50% { transform: translate(-3px, 1px) rotate(-1deg); }
+            60% { transform: translate(3px, -1px) rotate(1deg); }
+            70% { transform: translate(-1px, 1px) rotate(-1deg); }
+            80% { transform: translate(1px, -1px) rotate(1deg); }
+            90% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .shake-animation {
+            animation: shake 1.2s ease-in-out;
+        }
+
+        /* カプセルの落下アニメーション */
+        @keyframes drop-capsule-1 {
+            0% { transform: translateY(-100px) scale(0.2) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(40px) scale(1) rotate(180deg); opacity: 1; }
+            70% { transform: translateY(10px) rotate(270deg); }
+            100% { transform: translateY(20px) rotate(360deg); }
+        }
+        @keyframes drop-capsule-2 {
+            0% { transform: translateY(-100px) scale(0.2) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(40px) scale(1) rotate(-180deg); opacity: 1; }
+            70% { transform: translateY(10px) rotate(-270deg); }
+            100% { transform: translateY(20px) rotate(-360deg); }
+        }
+        .drop-1 {
+            animation: drop-capsule-1 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .drop-2 {
+            animation: drop-capsule-2 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.2s forwards;
+        }
+
+        /* カプセルが開くアニメーション */
+        @keyframes open-top {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-40px) rotate(-25deg); opacity: 0; }
+        }
+        @keyframes open-bottom {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(40px) rotate(25deg); opacity: 0; }
+        }
+        .open-cap-top {
+            animation: open-top 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .open-cap-bottom {
+            animation: open-bottom 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* ふわっと表示 */
+        @keyframes fade-in-up {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up {
+            animation: fade-in-up 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-amber-500 selection:text-white">
+
+    <!-- ヘッダー -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-amber-500 to-yellow-500 p-2 rounded-lg text-white shadow-inner">
+                    <i class="fa-solid fa-fire-burner text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400">
+                        新宿中華ガチャ
+                    </h1>
+                    <p class="text-xs text-slate-400">本場四川麻婆や自家製もちもち麺が当たる！</p>
+                </div>
+            </div>
+            <div class="text-xs bg-slate-700 py-1 px-3 rounded-full text-slate-300 font-mono">
+                Chinese Edition v1.0
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center items-center">
+        
+        <!-- ガイドメッセージ -->
+        <div id="guide-text" class="text-center mb-8 transition-all duration-500">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">熱烈の中華ガチャ</h2>
+            <p class="text-slate-400">筐体をタップして、中華の名店を決定！</p>
+        </div>
+
+        <!-- ガチャ台コンテナ -->
+        <div id="gacha-container" class="flex flex-col items-center justify-center w-full max-w-sm transition-all duration-700 my-4">
+            
+            <div onclick="spinGacha()" class="gacha-card cursor-pointer group bg-gradient-to-b from-amber-950 to-slate-900 border-2 border-amber-500/30 hover:border-amber-400 rounded-3xl p-8 shadow-2xl hover:shadow-amber-950/50 transition-all duration-500 transform hover:-translate-y-2 flex flex-col items-center w-full">
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold px-4 py-1.5 rounded-full mb-6">
+                    TAP TO SPIN
+                </span>
+                
+                <!-- ガチャ筐体のビジュアル -->
+                <div id="main-gacha-machine" class="w-48 h-72 bg-slate-800 rounded-3xl border-4 border-amber-500 relative flex flex-col overflow-hidden shadow-2xl">
+                    <!-- カプセルルーム (上部クリア部分) -->
+                    <div class="h-36 bg-slate-950/60 border-b-4 border-amber-500 relative flex items-center justify-center overflow-hidden">
+                        <div class="absolute inset-0 bg-radial-gradient from-transparent to-black/30"></div>
+                        <!-- ミニカプセルデコレーション -->
+                        <div class="absolute w-10 h-10 rounded-full bg-rose-500 top-4 right-10 opacity-80 border border-white/20"></div>
+                        <div class="absolute w-10 h-10 rounded-full bg-amber-500 top-8 left-4 opacity-80 border border-white/20"></div>
+                        <div class="absolute w-10 h-10 rounded-full bg-cyan-500 bottom-6 right-6 opacity-80 border border-white/20"></div>
+                        <div class="absolute w-10 h-10 rounded-full bg-purple-500 bottom-3 left-12 opacity-80 border border-white/20"></div>
+                        <div class="absolute w-10 h-10 rounded-full bg-emerald-500 top-2 left-16 opacity-70 border border-white/20"></div>
+                        <i class="fa-solid fa-hotdog text-slate-600/30 text-6xl absolute z-0"></i>
+                    </div>
+                    <!-- 操作パネル (中部) -->
+                    <div class="h-24 bg-amber-600 flex flex-col justify-center items-center relative z-10">
+                        <!-- ハンドル -->
+                        <div class="gacha-handle w-14 h-14 rounded-full bg-slate-100 border-4 border-slate-300 flex items-center justify-center shadow-md group-hover:rotate-45 transition-transform duration-300">
+                            <div class="w-2.5 h-12 bg-slate-600 rounded-full transform rotate-45"></div>
+                        </div>
+                    </div>
+                    <!-- 排出口 (下部) -->
+                    <div class="h-12 bg-slate-900 border-t-2 border-amber-700 flex items-center justify-center">
+                        <div class="w-16 h-8 bg-slate-950 rounded-t-lg border-2 border-amber-800"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <h3 class="text-xl font-bold text-amber-300 group-hover:text-amber-200">中華・アジアン・町中華</h3>
+                    <p class="text-xs text-slate-400 mt-2">タップするとガチャが回転します</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 演出表示エリア -->
+        <div id="animation-stage" class="hidden w-full max-w-lg flex flex-col items-center justify-center my-4">
+            
+            <div id="zoomed-gacha" class="transition-transform duration-500 flex flex-col items-center">
+                <!-- JavaScriptで筐体を挿入 -->
+            </div>
+
+            <!-- カプセル排出エリア -->
+            <div id="capsule-exit" class="h-44 w-full flex justify-center items-end space-x-12 relative overflow-hidden mt-4">
+                <div id="capsule-1" class="hidden flex-col items-center justify-center pointer-events-none transition-transform">
+                    <div id="cap-1-top" class="w-16 h-8 rounded-t-full border-t border-x border-white/30 transition-all duration-700 shadow-md"></div>
+                    <div id="cap-1-bottom" class="w-16 h-8 rounded-b-full border-b border-x border-white/30 transition-all duration-700 shadow-md"></div>
+                    <span id="cap-1-badge" class="mt-2 text-[10px] bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-slate-300">1つ目のカプセル</span>
+                </div>
+
+                <div id="capsule-2" class="hidden flex-col items-center justify-center pointer-events-none transition-transform">
+                    <div id="cap-2-top" class="w-16 h-8 rounded-t-full border-t border-x border-white/30 transition-all duration-700 shadow-md"></div>
+                    <div id="cap-2-bottom" class="w-16 h-8 rounded-b-full border-b border-x border-white/30 transition-all duration-700 shadow-md"></div>
+                    <span id="cap-2-badge" class="mt-2 text-[10px] bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-slate-300">2つ目のカプセル</span>
+                </div>
+            </div>
+
+            <!-- アクション促しテキスト -->
+            <p id="capsule-instruction" class="text-amber-400 font-bold text-center mt-4 animate-pulse hidden">
+                カプセルを開封しています... <i class="fa-solid fa-spinner animate-spin ml-2"></i>
+            </p>
+        </div>
+
+        <!-- 結果表示エリア -->
+        <div id="result-stage" class="hidden w-full max-w-4xl flex flex-col items-center my-6">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-400 to-rose-400 mb-6 text-center">
+                🎉 新宿エリアの中華の名店が決定しました！
+            </h2>
+
+            <div id="shop-cards" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-8">
+                <!-- JavaScriptで生成 -->
+            </div>
+
+            <!-- リトライボタン -->
+            <button onclick="resetGame()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-black py-4 px-10 rounded-full shadow-lg shadow-amber-950/40 hover:shadow-amber-950/60 transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200 text-lg flex items-center space-x-2">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>もう一度ガチャを回す</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-slate-950 text-slate-500 py-6 text-center text-xs border-t border-slate-800/80 mt-12">
+        <p>© 2026 新宿グルメガチャ探訪 - 中華専用エディション</p>
+        <p class="mt-1 text-slate-400">※表示される店舗情報は新宿エリアの実在店舗に基づいています。</p>
+    </footer>
+
+    <!-- JavaScript ロジック -->
+    <script>
+        // 中華専用データベース
+        const shops = [
+            {
+                name: "天府舫 (テンフファン)",
+                type: "本格四川料理",
+                badge: "本場辛さの四川郷土料理",
+                budget: "¥1,000",
+                comment: "新宿西口で熱い支持を受ける本格四川中華。スパイスと旨味が絶妙に調和した本場の辛さをお楽しみいただけます。",
+                imageUrl: "https://i.karameter.com/app/sellers/600-1eea91cb0cde550bff198cff83235dfb.jpg",
+                imageAlt: "天府舫の麻婆豆腐",
+                fallbackUrl: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=600",
+                shopUrl: "https://tabelog.com/tokyo/A1304/A130401/13129407/?vac_net=1&svd=20260603&svt=1900&svps=2",
+                walkTime: "10分"
+            },
+            {
+                name: "昌平ラーメン 新宿西口店",
+                type: "自家製麺・町中華",
+                badge: "唯一無二の麺とスープ",
+                budget: "¥1,000",
+                comment: "もちもちの自家製麺とコク深い極上スープが圧倒的な人気を誇る、新宿西口を代表する老舗町中華です。",
+                imageUrl: "https://magazine.vacan.com/wp-content/uploads/2022/02/VZ8A2998.webp",
+                imageAlt: "昌平ラーメンの自家製中華麺",
+                fallbackUrl: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&q=80&w=600",
+                shopUrl: "https://tabelog.com/tokyo/A1304/A130401/13041214/?vac_net=1&svd=20260603&svt=1900&svps=2",
+                walkTime: "5分"
+            }
+        ];
+
+        const capsuleColors = {
+            gold: { top: "bg-amber-400 border-amber-300", bottom: "bg-yellow-600 border-yellow-700", shadow: "shadow-amber-500/50", text: "ゴールドカプセル" },
+            silver: { top: "bg-slate-300 border-slate-200", bottom: "bg-slate-500 border-slate-600", shadow: "shadow-slate-400/50", text: "シルバーカプセル" },
+            red: { top: "bg-rose-500 border-rose-400", bottom: "bg-red-700 border-red-800", shadow: "shadow-rose-500/50", text: "レッドカプセル" },
+            blue: { top: "bg-cyan-500 border-cyan-400", bottom: "bg-blue-700 border-blue-800", shadow: "shadow-cyan-500/50", text: "ブルーカプセル" }
+        };
+
+        let capsuleConfigs = [];
+
+        function spinGacha() {
+            const guide = document.getElementById('guide-text');
+            guide.style.opacity = 0;
+
+            document.getElementById('gacha-container').classList.add('hidden');
+
+            const stage = document.getElementById('animation-stage');
+            stage.classList.remove('hidden');
+
+            const originMachine = document.getElementById('main-gacha-machine');
+            const cloned = originMachine.cloneNode(true);
+            cloned.classList.remove('h-72', 'w-48');
+            cloned.classList.add('h-80', 'w-52', 'scale-110');
+            
+            const zoomedContainer = document.getElementById('zoomed-gacha');
+            zoomedContainer.innerHTML = '';
+            zoomedContainer.appendChild(cloned);
+
+            const colorKeys = Object.keys(capsuleColors);
+            capsuleConfigs = shops.map(() => {
+                const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+                return capsuleColors[randomKey];
+            });
+
+            cloned.classList.add('shake-animation');
+            const handle = cloned.querySelector('.gacha-handle');
+            if (handle) {
+                handle.style.transition = 'transform 1.2s ease-in-out';
+                handle.style.transform = 'rotate(360deg)';
+            }
+
+            setTimeout(() => {
+                cloned.classList.remove('shake-animation');
+                releaseCapsules();
+            }, 1200);
+        }
+
+        function releaseCapsules() {
+            const guide = document.getElementById('guide-text');
+            guide.innerHTML = `
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">カプセルが排出されました！</h2>
+                <p class="text-slate-400 animate-pulse">自動で開封します、少々お待ちください...</p>
+            `;
+            guide.style.opacity = 1;
+
+            const cap1 = document.getElementById('capsule-1');
+            const cap2 = document.getElementById('capsule-2');
+
+            applyColor('1', capsuleConfigs[0]);
+            applyColor('2', capsuleConfigs[1]);
+
+            cap1.classList.remove('hidden');
+            cap1.classList.add('flex', 'drop-1');
+            cap2.classList.remove('hidden');
+            cap2.classList.add('flex', 'drop-2');
+
+            setTimeout(() => {
+                autoOpen();
+            }, 1500);
+        }
+
+        function applyColor(id, colorObj) {
+            const top = document.getElementById(`cap-${id}-top`);
+            const bottom = document.getElementById(`cap-${id}-bottom`);
+            const badge = document.getElementById(`cap-${id}-badge`);
+
+            top.className = "w-16 h-8 rounded-t-full border-t border-x border-white/30 transition-all duration-700 shadow-md " + colorObj.top + " " + colorObj.shadow;
+            bottom.className = "w-16 h-8 rounded-b-full border-b border-x border-white/30 transition-all duration-700 shadow-md " + colorObj.bottom + " " + colorObj.shadow;
+            badge.innerText = colorObj.text;
+        }
+
+        function autoOpen() {
+            document.getElementById('capsule-instruction').classList.remove('hidden');
+
+            const top1 = document.getElementById('cap-1-top');
+            const bot1 = document.getElementById('cap-1-bottom');
+            const badge1 = document.getElementById('cap-1-badge');
+            const top2 = document.getElementById('cap-2-top');
+            const bot2 = document.getElementById('cap-2-bottom');
+            const badge2 = document.getElementById('cap-2-badge');
+
+            setTimeout(() => {
+                top1.classList.add('open-cap-top');
+                bot1.classList.add('open-cap-bottom');
+                badge1.style.opacity = '0';
+            }, 100);
+
+            setTimeout(() => {
+                top2.classList.add('open-cap-top');
+                bot2.classList.add('open-cap-bottom');
+                badge2.style.opacity = '0';
+            }, 300);
+
+            setTimeout(() => {
+                showResults();
+            }, 1500);
+        }
+
+        function showResults() {
+            document.getElementById('animation-stage').classList.add('hidden');
+            document.getElementById('guide-text').classList.add('hidden');
+
+            const resultStage = document.getElementById('result-stage');
+            resultStage.classList.remove('hidden');
+
+            const container = document.getElementById('shop-cards');
+            container.innerHTML = '';
+
+            shops.forEach((shop, index) => {
+                const card = `
+                    <div class="bg-slate-800/80 backdrop-blur rounded-2xl overflow-hidden border border-slate-700 hover:border-slate-500 transition-all duration-300 transform hover:-translate-y-1 fade-in-up flex flex-col justify-between shadow-lg" style="animation-delay: ${index * 0.25}s">
+                        <div>
+                            <div class="h-48 w-full overflow-hidden relative">
+                                <img src="${shop.imageUrl}" alt="${shop.imageAlt}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='${shop.fallbackUrl}'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                                <span class="absolute bottom-3 left-4 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 text-xs font-black px-3 py-1 rounded shadow">
+                                    ✨ ${shop.badge}
+                                </span>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                                        ${shop.type}
+                                    </span>
+                                </div>
+
+                                <h3 class="text-2xl font-black text-white tracking-wide mb-2">
+                                    ${shop.name}
+                                </h3>
+
+                                <div class="flex items-center space-x-4 mb-4 text-sm text-slate-400">
+                                    <div>
+                                        <i class="fa-solid fa-coins mr-1.5 text-slate-500"></i>予算: ${shop.budget}
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 mb-4 flex items-center space-x-3">
+                                    <div class="bg-amber-500/10 text-amber-400 p-2 rounded-lg">
+                                        <i class="fa-solid fa-person-walking text-lg animate-pulse"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-bold text-slate-400 block">アクセス</span>
+                                        <span class="text-white text-sm font-black">コクーンタワーから徒歩 ${shop.walkTime}</span>
+                                    </div>
+                                </div>
+
+                                <p class="text-slate-300 text-sm leading-relaxed">
+                                    ${shop.comment}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 pt-0 mt-auto">
+                            <div class="border-t border-slate-700/60 pt-4 flex flex-col space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-black text-amber-400 tracking-wider">
+                                        <i class="fa-solid fa-circle-info mr-1"></i>もっと詳しく！
+                                    </span>
+                                    <span class="text-slate-500 text-[10px]"><i class="fa-solid fa-qrcode mr-1"></i>スマホでスキャン</span>
+                                </div>
+                                <div class="flex items-center space-x-4 bg-slate-900/50 p-3 rounded-xl border border-slate-700/40">
+                                    <div class="w-14 h-14 bg-white p-1 rounded-lg shrink-0 flex items-center justify-center shadow-inner">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(shop.shopUrl)}" alt="QR Code" class="w-full h-full object-contain">
+                                    </div>
+                                    <div class="flex-grow text-[11px] text-slate-300 leading-normal flex flex-col justify-between h-full min-h-[56px]">
+                                        <div>
+                                            <p class="font-bold text-white leading-tight mb-0.5">店舗サイト / クチコミ</p>
+                                            <p class="text-slate-400 text-[10px] leading-tight">スキャン、または隣のボタンからアクセス！</p>
+                                        </div>
+                                        <div class="mt-1.5">
+                                            <a href="${shop.shopUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-bold py-1 px-3 rounded-md text-[11px] transition-colors shadow">
+                                                <span>詳細はこちら</span>
+                                                <i class="fa-solid fa-up-right-from-square text-[9px]"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function resetGame() {
+            document.getElementById('result-stage').classList.add('hidden');
+            document.getElementById('capsule-instruction').classList.add('hidden');
+
+            const cap1 = document.getElementById('capsule-1');
+            const cap2 = document.getElementById('capsule-2');
+            cap1.className = "hidden flex-col items-center justify-center pointer-events-none transition-transform";
+            cap2.className = "hidden flex-col items-center justify-center pointer-events-none transition-transform";
+
+            const top1 = document.getElementById('cap-1-top');
+            const bot1 = document.getElementById('cap-1-bottom');
+            const badge1 = document.getElementById('cap-1-badge');
+            const top2 = document.getElementById('cap-2-top');
+            const bot2 = document.getElementById('cap-2-bottom');
+            const badge2 = document.getElementById('cap-2-badge');
+
+            top1.className = "w-16 h-8 rounded-t-full border-t border-x border-white/30 transition-all duration-700 shadow-md";
+            bot1.className = "w-16 h-8 rounded-b-full border-b border-x border-white/30 transition-all duration-700 shadow-md";
+            top2.className = "w-16 h-8 rounded-t-full border-t border-x border-white/30 transition-all duration-700 shadow-md";
+            bot2.className = "w-16 h-8 rounded-b-full border-b border-x border-white/30 transition-all duration-700 shadow-md";
+
+            badge1.style.opacity = '1';
+            badge2.style.opacity = '1';
+
+            const guide = document.getElementById('guide-text');
+            guide.innerHTML = `
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">熱烈の中華ガチャ</h2>
+                <p class="text-slate-400">筐体をタップして、中華の名店を決定！</p>
+            `;
+            guide.style.opacity = 1;
+
+            document.getElementById('gacha-container').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
